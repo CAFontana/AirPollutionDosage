@@ -2,7 +2,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import time
-from TimeStampedHeartRate import TimeStampedHeartRate
+from fitbit.TimeStampedHeartRate import TimeStampedHeartRate
 
 class FitbitDataParser:
         fitbit_time_format = '%Y-%m-%dT%H:%M:%S.%f%z'
@@ -15,8 +15,10 @@ class FitbitDataParser:
 
                 for trackpoint in track:
                         tshr = TimeStampedHeartRate(time.mktime(
-                                datetime.strptime(trackpoint[0].text,
-                                self.fitbit_time_format).timetuple()), trackpoint[4][0].text)
+                                datetime.strptime(trackpoint[0].text, self.fitbit_time_format).timetuple()),
+                                trackpoint[4][0].text,
+                                trackpoint[1][0].text,
+                                trackpoint[1][1].text)
 
                         tsmap[tshr.timestamp] = tshr
 
