@@ -1,4 +1,4 @@
-from util import roundToMultiple
+from core.util import roundToMultiple
 
 class DosageData:
     timestamp = 0

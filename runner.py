@@ -1,59 +1,10 @@
-from fitbit.FitbitDataParser import FitbitDataParser
-from flow.FlowDataParser import FlowDataParser
-from DosageData import DosageData
-from util import *
-from collections import defaultdict
+from core.PolutantCalc import PolutantCalc
+from core.util import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
 
-
-
-class PolutantCalc:
-
-
-    liter_per_m3 = 1000
-    NO2_ppb_to_ug_m3 = 1.88  # https://www2.dmu.dk/AtmosphericEnvironment/Expost/database/docs/PPM_conversion.pdf
-    ppb_coeff = 0.0409 * 1000  # https://cfpub.epa.gov/ncer_abstracts/index.cfm/fuseaction/display.files/fileID/14285
-    average_molecular_weight_of_VOCs = 122.01  # https://www.eurofinsus.com/media/161384/unit_conversion1.xls
-    tshr_interval_seconds = 5 # heart rate is captured in 5 seconds intervals
-
-    def calculate_workout_polution(self, workout_txc, polutionConcentrations):
-
-
-        tshr_map = FitbitDataParser().parse(workout_txc)
-        concentration = FlowDataParser().parse(polutionConcentrations)
-        dosage = defaultdict(DosageData)
-
-        for tshr in tshr_map.values():
-
-            minute_ventilation = 0.0063 * float(tshr.heartrate) ** 2 - 0.6253 * float(tshr.heartrate) + 28.152
-
-            dosage[str(tshr.timestamp)] = DosageData(
-                tshr.timestamp,
-                concentration[roundToMultiple(tshr.timestamp)].date,
-                tshr.lat,
-                tshr.long,
-                minute_ventilation,
-                float(concentration[roundToMultiple(tshr.timestamp)].NO2) * (
-                            self.NO2_ppb_to_ug_m3 / self.liter_per_m3) * minute_ventilation / (
-                            60 / self.tshr_interval_seconds),  # NO2
-                float(concentration[roundToMultiple(tshr.timestamp)].VOC) * (
-                            self.ppb_coeff * self.average_molecular_weight_of_VOCs / self.liter_per_m3) * minute_ventilation / (
-                            60 / self.tshr_interval_seconds), # VOC
-                float(concentration[
-                          roundToMultiple(tshr.timestamp)].PM10) * self.liter_per_m3 * minute_ventilation / (
-                            60 / self.tshr_interval_seconds),  # PM10
-                float(concentration[
-                          roundToMultiple(tshr.timestamp)].PM25) * self.liter_per_m3 * minute_ventilation / (
-                            60 / self.tshr_interval_seconds)  # PM25
-            )
-
-
-        return concentration, dosage
-
-
-concentration, dosage = PolutantCalc().calculate_workout_polution('fitbit/24627482886.tcx', 'flow/user_measures_20190813_20190823_1.csv')
+concentration, dosage = PolutantCalc().calculate_workout_polution('data/24627482886.tcx', 'data/user_measures_20190813_20190823_1.csv')
 
 # Create the pd table
 
@@ -67,7 +18,6 @@ PM10_series = []
 PM25_series = []
 
 for ts, dose in dosage.items():
-    # print(ts, dose)
     time.append(ts)
     lat_series.append(dose.lat)
     long_series.append(dose.long)
