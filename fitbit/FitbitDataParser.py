@@ -1,14 +1,14 @@
-
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElT
 from datetime import datetime
 import time
 from fitbit.TimeStampedHeartRate import TimeStampedHeartRate
+
 
 class FitbitDataParser:
         fitbit_time_format = '%Y-%m-%dT%H:%M:%S.%f%z'
 
         def parse(self, file):
-                tree = ET.parse(file)
+                tree = ElT.parse(file)
                 track = tree.getroot()[0][0][1][5]
 
                 tsmap = dict()
